@@ -1,0 +1,164 @@
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+```
+```{r}
+datos <- data.frame(
+  ORDEN = 1:30,
+  NACHO = c(23, 23.5, 26, 24, 20, 21.5, 22, 19, 20.5, 18.5, 19, 16, 20, 20.5, 29, 24, 24, 21.5, 19, 27, 22, 19, 21.5, 14.5, 17.5, 19, 23, 20.5, 20.5, 16.5),
+  LAUTA = c(30, 19, 17, 15.5, 20, 30, 16.5, 19.5, 16, 15, 15.5, 18, 22, 19, 17, 18.5, 18.5, 17, 18, 17, 18, 18, 17.5, 17, 20, 20, 18, 20.5, 14.5, 20),
+  MARIO = c(15, 5, 5, 8, 3, 11.5, 16, 15, 10, 11, 13, 15, 13, 5, 2, 17, 19, 10, 7, 25, 11, 3, 5, 17, 12, 19, 17, 4, 19, 12),
+  RAFA = c(25.5, 23, 24.5, 21.5, 24.5, 25, 17, 12, 20.5, 20, 24, 17.5, 23.5, 18, 25.5, 25.5, 30, 27.5, 20, 22, 20.5, 24, 23, 24.5, 20.5, 20.5, 23, 20, 18, 24)
+)
+datos_tidy1 <- gather(datos, key = "NOMBRE", value = "PUNTUACION", -ORDEN)
+print(datos_tidy1)
+
+ggplot(datos_tidy1, aes(x = PUNTUACION, fill = NOMBRE)) +
+  geom_density(alpha = 0.5) +
+  labs(title = "Distribución de Puntuaciones por Individuo",
+       x = "Puntuación",
+       y = "Densidad") +
+  theme_minimal()
+
+
+```
+```{r}
+# Calcular la media de cada columna de datos
+medias <- colMeans(datos[, -1])  # Excluye la columna ORDEN
+
+# Calcular la mediana de cada columna de datos
+medianas <- sapply(datos[, -1], median)
+# Función para calcular la moda
+Mode <- function(x) {
+  uniq_x <- unique(x)
+  uniq_x[which.max(tabulate(match(x, uniq_x)))]
+}
+
+# Calcular la moda de cada columna de datos
+modas <- sapply(datos[, -1], function(x) {
+  tab <- table(x)
+  as.numeric(names(tab)[which.max(tab)])
+})
+# Calcular el desvío estándar de cada columna de datos
+desviostd <- sapply(datos[, -1], sd)
+
+# Calcular el error estándar de cada columna de datos
+errorestd <- sapply(datos[, -1], function(x) sd(x) / sqrt(length(x)))
+
+# Calcular el coeficiente de variación de cada columna de datos
+coefvariacion <- sapply(datos[, -1], function(x) (sd(x) / mean(x)) * 100)
+# Calcular la varianza de cada columna de datos
+varianzas <- sapply(datos[, -1], var)
+
+# Crear un marco de datos con los resultados
+resultados <- data.frame(Columna = colnames(datos[, -1]), Media = medias, Mediana = medianas, Moda = modas, Varianza = varianzas)
+
+# Crear un marco de datos con los resultados
+resultados <- data.frame(
+  Columna = colnames(datos[, -1]),
+  Media = medias,
+  Mediana = medianas,
+  Moda = modas,
+  Varianza = varianzas,
+  DesvioEstandar = desviostd,
+  ErrorEstandar = errorestd,
+  CoeficienteVariacion = coefvariacion
+)
+
+# Mostrar los resultados
+print(resultados)
+
+
+# Agregar los nombres de las columnas
+rownames(resultados) <- names(datos[, -1])
+
+# Mostrar los resultados
+print(resultados)
+
+```
+```{r}
+
+# Graficos de densidad
+gr1 <- ggplot(datos, aes(x = NACHO)) +
+  geom_density(fill = "blue", alpha = 0.5) +
+  labs(title = "Diagrama de Densidad de NACHO")
+
+
+gr2 <-  ggplot(datos, aes(x = LAUTA)) +
+  geom_density(fill = "red", alpha = 0.5) +
+  labs(title = "Diagrama de Densidad de LAUTA")
+
+
+gr3 <- ggplot(datos, aes(x = MARIO)) +
+  geom_density(fill = "green", alpha = 0.5) +
+  labs(title = "Diagrama de Densidad de MARIO")
+
+
+gr4 <- ggplot(datos, aes(x = RAFA)) +
+  geom_density(fill = "purple", alpha = 0.5) +
+  labs(title = "Diagrama de Densidad de RAFA")
+
+(gr1 + gr2) / (gr3 + gr4)
+
+```
+```{r}
+# Cargar la librería ggplot2 si aún no está cargada
+library(ggplot2)
+
+# Transformar la tabla de datos en formato largo (tidy)
+library(tidyr)
+datos_tidy <- pivot_longer(datos, -ORDEN, names_to = "Variable", values_to = "Valor")
+
+# Crear un gráfico de boxplot para todas las variables
+grafico_boxplot <- ggplot(datos_tidy, aes(x = Variable, y = Valor, fill = Variable)) +
+  geom_boxplot() +
+  labs(title = "Reflejos") +
+  xlab("Variable") +
+  ylab("Valor") +
+  scale_fill_manual(values = c("NACHO" = "blue", "LAUTA" = "red", "MARIO" = "green", "RAFA" = "purple")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Mostrar el gráfico de boxplot
+print(grafico_boxplot)
+
+```
+
+```{r fig.height=8, fig.width=5}
+# Cargar la librería ggplot2 si aún no está cargada
+library(ggplot2)
+
+# Crear un histograma para la columna NACHO
+grafico_histograma <- ggplot(datos_tidy1, aes(x = PUNTUACION, fill = NOMBRE)) +
+  geom_histogram(binwidth = 2, alpha = 0.5) +
+  labs(title = "Histograma de puntuaciones") +
+  facet_wrap(vars(NOMBRE), ncol = 1) +
+  xlab("Valor") +
+  ylab("Frecuencia")
+
+# Mostrar el histograma
+print(grafico_histograma)
+
+```
+
+```{r}
+medias <- colMeans(datos[, -1])
+desviaciones_estandar <- sapply(datos[, -1], sd)
+
+# Número de simulaciones
+simulaciones <- 100
+
+# Simulación Montecarlo
+simulacion <- data.frame(
+  NACHO = rnorm(simulaciones, mean = medias["NACHO"], sd = desviaciones_estandar["NACHO"]),
+  LAUTA = rnorm(simulaciones, mean = medias["LAUTA"], sd = desviaciones_estandar["LAUTA"]),
+  MARIO = rnorm(simulaciones, mean = medias["MARIO"], sd = desviaciones_estandar["MARIO"]),
+  RAFA = rnorm(simulaciones, mean = medias["RAFA"], sd = desviaciones_estandar["RAFA"])
+)
+
+
+head(simulacion)
+```
